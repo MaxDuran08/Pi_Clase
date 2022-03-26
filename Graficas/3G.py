@@ -27,14 +27,35 @@ plt.title('Grafica de lineas')
 Valores=['5','4','2','3']
 
 plt.plot(Etiquetas,Valores,'--g', marker="*", markersize=15, label="verde")
-plt.show()
+"""
+Location String     <>  Location Code
+'best'	                    0
+'upper right'	            1
+'upper left'	            2
+'lower left'	            3
+'lower right'	            4
+'right'	                    5
+'center left'	            6
+'center right'	            7
+'lower center'	            8
+'upper center'	            9
+'center'	                10
+"""
+plt.legend(loc=0)
+
 
 
 figura2=plt.figure(2)
-plt.pie(Valores,labels=Etiquetas)
+
+Valores=[6,3,3,6]
+desfase=[0,0,0,0.1]
+plt.pie(Valores,labels=Etiquetas,autopct="%i%%",colors=["red","purple","gold","indigo"],explode=desfase,textprops=dict(color="cyan"))
+"%0.1f%%"
 plt.title('Grafica de pie')
+plt.show()
 
 figura3=plt.figure(3)
+Valores=[1,2,3,4]
 plt.bar(Etiquetas,Valores)
 plt.xlabel('Etiquetas')
 plt.ylabel('Valores')
