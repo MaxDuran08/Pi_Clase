@@ -10,6 +10,8 @@ fig, ((ax0, ax1), (ax2, ax3)) = plt.subplots(nrows=2, ncols=2)
 
 colors = ['red', 'tan', 'lime']
 ax0.hist(x, n_bins, density=True, histtype='bar', color=colors, label=colors)
+for y in x:
+    print(y)
 ax0.legend(prop={'size': 10})
 ax0.set_title('bars with legend')
 
