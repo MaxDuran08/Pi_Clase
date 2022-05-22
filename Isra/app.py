@@ -41,14 +41,7 @@ class app:
         botonAnalizar.place(x=175,y=40)
 
 
-#Creas un frame encima del frame base
-        self.FrameD=Frame(self.miFrame)
-        self.FrameD.pack(fill=BOTH, expand=1)
-        self.FrameD.place(x=20,y=80)
-#le creas un lienzo=Canvas que estara en el nuevo frame, ahi es donde vamos a pintar      
-        self.myCanvas=Canvas(self.FrameD)
-        self.myCanvas.configure(width=700,height=540)
-        self.myCanvas.pack(side=LEFT,fill=BOTH,expand=1)
+
 
 
         """fig = Figure(figsize=(5, 4), dpi=100)
@@ -69,38 +62,73 @@ class app:
         
 
     def Analizar(self):
+
+        """
+        No es lo mas optimo pero si hago el frame antes donde estan los gadgets se van haciendo graficas abajo de cada una, entonces cada vez que se analiza se crea este lienzo
+        , esta mal va vos, por que se crea uno encima de otro cada vez que analizas
+        """
+        #Creas un frame encima del frame base
+        self.FrameD=Frame(self.miFrame)
+        self.FrameD.pack(fill=BOTH, expand=1)
+        self.FrameD.place(x=20,y=80)
+        #le creas un lienzo=Canvas que estara en el nuevo frame, ahi es donde vamos a pintar      
+        self.myCanvas=Canvas(self.FrameD)
+        self.myCanvas.configure(width=700,height=540)
+        self.myCanvas.pack(side=LEFT,fill=BOTH,expand=1)
+
         print("Analizando")
         """if self.imagen!=None:
+
             print(f"La ruta es {self.imagen}")"""
+        """Este tryo hace que se detenga el hilo de la animacion, digamo que cuando haces el metodo analizar y esta en proceso de animar, corta la animacion actual para
+            empezar a hacer otra animacion"""
+        try:
+            self.animacion.event_source.stop()
+        except:
+            pass
+
         Red=RedNeuronal()
         Red.Aprender()
         Historial=Red.RetornarHistorial()
+
         #print(Historial.history["loss"])
 
-        #Agregamos la grafica
+
+        #Se crea los arreglos de los valores en X y Y
         self.DataX=Historial.history["loss"]
+
         self.DataY=[]
         for y in range(len(Historial.history["loss"])):
             self.DataY.append(y)
-        #print(self.DataY)
+
+        #Se empieza a hacer la grafica
         self.fig, self.ax = plt.subplots()
         plt.title("Grafica en Tkinter con Matplotlib",color='black',size=16, family="Arial")
 
         self.ax.tick_params(direction='out', length=6, width=2,colors='black', grid_color='r', grid_alpha=0.5)
 
-        self.line, =self.ax.plot(self.DataY,self.DataX)
-        plt.xlim([-2,1002])
+        #aqui le paso un arreglo vacio al crear la grafica pues despues va a actualizar los datos
+        r=[]
+        self.line, =self.ax.plot(r,r, color='r', marker='o',linewidth=3, markersize=1, markeredgecolor='m')
+
+        #aqui se ponen los limites que tendra la grafica, digamos que en y le puse que sea max y min de los datos del arreglo de lo que aprendio
+        #pero en x el 1002 digamos es el numero que vos le das de intentos para que aprenda y el -50 es para que este separado el eje en x=0 y no salga pegado a la pared
+        plt.xlim([-50,1002])
         plt.ylim([min(Historial.history["loss"]),max(Historial.history["loss"])]) 
         
+        #Aqui agrego la grafica al canvas
         self.canvas = FigureCanvasTkAgg(self.fig, master=self.myCanvas)  # A tk.DrawingArea.
         self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
 
-        animacion=animation.FuncAnimation(self.fig,self.Animar,interval=50, blit=True)
-        self.canvas.draw()
 
+        #aqui se hace la animacion, en interval=5 el 5 es la velocidad que le puse para que grafique, si queres le podes pedir al usuario esa velocidad
+        self.animacion=animation.FuncAnimation(self.fig,self.Animar,interval=5, blit=True, save_count=10)
+        self.canvas.draw()
         
+
+        #Esta funcion anima la grafica
     def Animar(self,parametro):
-        self.line.set_ydata(self.DataX[parametro])
+        self.line.set_data(self.DataY[:parametro],self.DataX[:parametro])
         return self.line,
     
 
