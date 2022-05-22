@@ -5,13 +5,17 @@ from tkinter.ttk import Combobox
 from tkinter.messagebox import showinfo
 import easygui
 from RedNeuronal import RedNeuronal
-import matplotlib as plt
+import matplotlib.pyplot as plt
 
 from matplotlib.backends.backend_tkagg import (
     FigureCanvasTkAgg, NavigationToolbar2Tk)
 # Implement the default Matplotlib key bindings.
 from matplotlib.backend_bases import key_press_handler
 from matplotlib.figure import Figure
+
+import threading
+import matplotlib.animation as animation
+import numpy as np
 
 class app:
     def __init__(self,master):
@@ -47,6 +51,18 @@ class app:
         self.myCanvas.pack(side=LEFT,fill=BOTH,expand=1)
 
 
+        """fig = Figure(figsize=(5, 4), dpi=100)
+        fig.add_subplot(111).plot(self.Data)
+
+        canvas = FigureCanvasTkAgg(fig, master=self.myCanvas)  # A tk.DrawingArea.
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)"""
+
+        """toolbar = NavigationToolbar2Tk(canvas, self.myCanvas)
+        toolbar.update()
+        canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)"""
+
+
     def CargarImagen(self):
         print("CArgar Archivo")
         self.imagen=easygui.fileopenbox(title="Seleccione una imagen.")
@@ -59,17 +75,38 @@ class app:
         Red=RedNeuronal()
         Red.Aprender()
         Historial=Red.RetornarHistorial()
-        print(Historial.history["loss"])
-        fig = Figure(figsize=(5, 4), dpi=100)
-        fig.add_subplot(111).plot(Historial.history["loss"])
+        #print(Historial.history["loss"])
 
-        canvas = FigureCanvasTkAgg(fig, master=self.myCanvas)  # A tk.DrawingArea.
-        canvas.draw()
-        canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        #Agregamos la grafica
+        self.DataX=Historial.history["loss"]
+        self.DataY=[]
+        for y in range(len(Historial.history["loss"])):
+            self.DataY.append(y)
+        #print(self.DataY)
+        self.fig, self.ax = plt.subplots()
+        plt.title("Grafica en Tkinter con Matplotlib",color='black',size=16, family="Arial")
 
-        toolbar = NavigationToolbar2Tk(canvas, self.myCanvas)
-        toolbar.update()
-        canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+        self.ax.tick_params(direction='out', length=6, width=2,colors='black', grid_color='r', grid_alpha=0.5)
+
+        self.line, =self.ax.plot(self.DataY,self.DataX)
+        plt.xlim([-2,1002])
+        plt.ylim([min(Historial.history["loss"]),max(Historial.history["loss"])]) 
+        
+        self.canvas = FigureCanvasTkAgg(self.fig, master=self.myCanvas)  # A tk.DrawingArea.
+        self.canvas.get_tk_widget().pack(side=tkinter.TOP, fill=tkinter.BOTH, expand=1)
+
+        animacion=animation.FuncAnimation(self.fig,self.Animar,interval=50, blit=True)
+        self.canvas.draw()
+
+        
+    def Animar(self,parametro):
+        self.line.set_ydata(self.DataX[parametro])
+        return self.line,
+    
+
+
+
+
 
 root = Tk()
 Ventana=app(root)
